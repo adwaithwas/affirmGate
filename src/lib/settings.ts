@@ -1,10 +1,18 @@
 import {
   AFFIRMATION_DURATIONS,
+  COMPLETION_SOUND_REPEAT_COUNTS,
   DEFAULT_AFFIRMATION,
   DEFAULT_AFFIRMATION_DURATION,
+  DEFAULT_COMPLETION_SOUND_REPEAT_COUNT,
   DEFAULT_REMINDER,
+  DEFAULT_TIMER_SOUND_ENABLED,
+  DEFAULT_TIMER_SOUND_VOLUME,
   MAX_AFFIRMATION_LENGTH,
+  MAX_COMPLETION_SOUND_REPEAT_COUNT,
   MAX_REMINDER_LENGTH,
+  MAX_TIMER_SOUND_VOLUME,
+  MIN_COMPLETION_SOUND_REPEAT_COUNT,
+  MIN_TIMER_SOUND_VOLUME,
 } from './constants';
 import type { Settings } from './types';
 
@@ -14,6 +22,9 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   enabled: true,
   affirmation: DEFAULT_AFFIRMATION,
   affirmationDuration: DEFAULT_AFFIRMATION_DURATION,
+  timerSoundEnabled: DEFAULT_TIMER_SOUND_ENABLED,
+  timerSoundVolume: DEFAULT_TIMER_SOUND_VOLUME,
+  completionSoundRepeatCount: DEFAULT_COMPLETION_SOUND_REPEAT_COUNT,
 });
 
 /** Returns a detached copy of the default settings. */
@@ -91,6 +102,62 @@ export function normalizeAffirmationDuration(value: unknown): number {
 }
 
 /**
+ * Normalizes an arbitrary volume value to a clamped number in [0, 1].
+ * Anything invalid falls back to the default volume.
+ */
+export function normalizeTimerSoundVolume(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_TIMER_SOUND_VOLUME;
+  }
+  if (value < MIN_TIMER_SOUND_VOLUME) return MIN_TIMER_SOUND_VOLUME;
+  if (value > MAX_TIMER_SOUND_VOLUME) return MAX_TIMER_SOUND_VOLUME;
+  return value;
+}
+
+/** True when the value is one of the allowed repetition counts (1-5). */
+export function isAllowedCompletionSoundRepeatCount(
+  value: unknown,
+): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    (COMPLETION_SOUND_REPEAT_COUNTS as readonly number[]).includes(value)
+  );
+}
+
+/**
+ * Normalizes an arbitrary repetition count to an integer within [1, 5].
+ *
+ * - Allowed integers (1-5) are kept as-is.
+ * - Other finite numbers (and numeric strings) are rounded and clamped into
+ *   range, so an out-of-range stored value never escapes the allowed bounds.
+ * - Missing, malformed or non-numeric values fall back to the default count.
+ */
+export function normalizeCompletionSoundRepeatCount(value: unknown): number {
+  let parsed: number | null = null;
+
+  if (typeof value === 'number') {
+    parsed = value;
+  } else if (typeof value === 'string' && value.trim().length > 0) {
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) parsed = numeric;
+  }
+
+  if (parsed === null || !Number.isFinite(parsed)) {
+    return DEFAULT_COMPLETION_SOUND_REPEAT_COUNT;
+  }
+
+  const rounded = Math.round(parsed);
+  if (rounded < MIN_COMPLETION_SOUND_REPEAT_COUNT) {
+    return MIN_COMPLETION_SOUND_REPEAT_COUNT;
+  }
+  if (rounded > MAX_COMPLETION_SOUND_REPEAT_COUNT) {
+    return MAX_COMPLETION_SOUND_REPEAT_COUNT;
+  }
+  return rounded;
+}
+
+/**
  * Turns any stored/unknown value into a valid {@link Settings} object.
  *
  * Handles missing values, wrong types, corrupt objects and extra keys without
@@ -113,6 +180,14 @@ export function normalizeSettings(raw: unknown): Settings {
       typeof record.enabled === 'boolean' ? record.enabled : DEFAULT_SETTINGS.enabled,
     affirmation: sanitizeAffirmation(record.affirmation),
     affirmationDuration: normalizeAffirmationDuration(record.affirmationDuration),
+    timerSoundEnabled:
+      typeof record.timerSoundEnabled === 'boolean'
+        ? record.timerSoundEnabled
+        : DEFAULT_TIMER_SOUND_ENABLED,
+    timerSoundVolume: normalizeTimerSoundVolume(record.timerSoundVolume),
+    completionSoundRepeatCount: normalizeCompletionSoundRepeatCount(
+      record.completionSoundRepeatCount,
+    ),
   };
 }
 

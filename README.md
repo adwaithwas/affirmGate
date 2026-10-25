@@ -241,6 +241,26 @@ Default affirmation:
 
 > I am becoming the person I have chosen to be. My attention belongs to what matters to me.
 
+### Timer Sound
+
+The **Timer Sound** panel controls the short, locally generated (Web Audio API)
+notification that plays when the affirmation timer reaches zero:
+
+1. **Completion sound** — switch the notification on or off (on by default).
+2. **Volume** — a slider from 0 to 100% (default: 30%, a quiet level).
+3. **Repeat count** — how many times the complete notification pattern plays
+   each time the timer completes: **1, 2, 3 (default), 4, or 5 times**, with a
+   short ~800 ms gap between repetitions. Values stored by older versions (or
+   corrupt values) are validated and clamped into this range; missing values get
+   the default of 3.
+4. **Test Sound** — plays the same notification pattern with the current
+   on-screen volume and repeat count, so you can try settings without waiting
+   for the countdown. Only one test sequence plays at a time.
+
+The sound never blocks the timer: if the browser rejects playback (autoplay
+restriction) the countdown still finishes and the completion screen still
+appears.
+
 ---
 
 ## Navigation policy
@@ -289,7 +309,7 @@ Behavior:
 ### Automated (run locally)
 
 ```bash
-npm test        # 45 unit tests — settings validation + navigation + timer logic
+npm test        # 73 unit tests — settings validation + navigation + timer logic + sound sequencing
 npm run compile # TypeScript type-check
 npm run build && npm run build:firefox
 ```
@@ -299,8 +319,9 @@ What the automated tests cover:
 - `settings.test.ts` — fall back to defaults for `null`/`undefined`/wrong types,
   trim whitespace, preserve newlines/tabs, strip other control characters,
   truncate to the max length, ignore extra keys, never mutate input, return fresh
-  default objects, migrate legacy settings that predate the affirmation timer,
-  and validate/normalize the affirmation text and timer duration.
+  default objects, migrate legacy settings that predate the affirmation timer
+  and the sound settings, and validate/normalize the affirmation text, timer
+  duration, sound volume, and completion-sound repeat count (1–5).
 - `navigation.test.ts` — host detection (incl. look-alike domains), route-key
   generation for watch/search/playlist/shorts/channel/home, ignoring transient
   params, `null` for non-YouTube URLs, distinct-vs-duplicate navigation counting
@@ -308,6 +329,12 @@ What the automated tests cover:
 - `timer.test.ts` — session/deadline creation, remaining milliseconds/seconds
   (round-up behavior at the boundary), completion, progress fraction (0→1,
   clamped), and `M:SS` clock formatting (incl. invalid input).
+- `timer-sound.test.ts` — completion-sound sequencing: exactly 1/3/5 pattern
+  plays for the matching repeat count, default count, gaps only *between*
+  patterns, tones inside a pattern are not counted as repetitions, disabled
+  sound plays nothing, blocked/failed playback fails gracefully, overlapping
+  sequences are rejected (`busy`), and cancellation (page unload) stops the
+  sequence and clears its gap timer.
 
 ### Manual (requires a live browser)
 
@@ -394,7 +421,7 @@ Use this checklist whenever the overlay, navigation, or background code changes:
 
 ## Automated results (as executed in this repository)
 
-- `npm test` — **passing**: 3 test files, 45 tests.
+- `npm test` — **passing**: 4 test files, 73 tests.
 - `npm run compile` — **passing**: no type errors.
 - `npm run build` (Chromium, `chrome-mv3`) — **passing**.
 - `npm run build:firefox` (`firefox-mv2`) — **passing** (no build warnings).

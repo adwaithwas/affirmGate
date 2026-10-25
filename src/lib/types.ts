@@ -8,6 +8,12 @@ export interface Settings {
   affirmation: string;
   /** Countdown duration (in seconds) for the affirmation timer. */
   affirmationDuration: number;
+  /** Whether the timer completion sound is enabled. */
+  timerSoundEnabled: boolean;
+  /** Volume for the timer completion sound (0-1). */
+  timerSoundVolume: number;
+  /** How many times the completion sound pattern repeats (1-5). */
+  completionSoundRepeatCount: number;
 }
 
 /** Result of asking the background to close the current tab. */

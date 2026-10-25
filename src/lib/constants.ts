@@ -26,6 +26,33 @@ export const AFFIRMATION_DURATIONS = [15, 30, 60, 90, 120] as const;
 /** Default countdown duration (in seconds). */
 export const DEFAULT_AFFIRMATION_DURATION = 30;
 
+/** Default timer completion sound enabled state. */
+export const DEFAULT_TIMER_SOUND_ENABLED = true;
+
+/** Default timer completion sound volume (conservative, relatively quiet). */
+export const DEFAULT_TIMER_SOUND_VOLUME = 0.3;
+
+/** Minimum timer sound volume. */
+export const MIN_TIMER_SOUND_VOLUME = 0;
+
+/** Maximum timer sound volume. */
+export const MAX_TIMER_SOUND_VOLUME = 1;
+
+/** Allowed repetition counts for the completion sound pattern. */
+export const COMPLETION_SOUND_REPEAT_COUNTS = [1, 2, 3, 4, 5] as const;
+
+/** Default number of times the completion sound pattern plays. */
+export const DEFAULT_COMPLETION_SOUND_REPEAT_COUNT = 3;
+
+/** Minimum completion sound repetition count. */
+export const MIN_COMPLETION_SOUND_REPEAT_COUNT = 1;
+
+/** Maximum completion sound repetition count. */
+export const MAX_COMPLETION_SOUND_REPEAT_COUNT = 5;
+
+/** Gap (ms) between repeated completion sound patterns. */
+export const COMPLETION_SOUND_REPEAT_GAP_MS = 800;
+
 /** Storage key for the user's settings (WXT namespaced key: area + name). */
 export const SETTINGS_STORAGE_KEY = 'local:settings';
 

@@ -55,7 +55,7 @@
       <section class="panel" aria-labelledby="affirmation-heading">
         <h2 id="affirmation-heading">Affirmation timer</h2>
         <p class="muted" id="affirmation-help">
-          When you choose “No — I'd rather affirm”, this affirmation appears on a
+          When you choose "No — I'd rather affirm", this affirmation appears on a
           calm timer page instead of YouTube. Write what you want to repeat to
           yourself during the pause.
         </p>
@@ -85,6 +85,54 @@
         <div class="buttons">
           <button type="button" class="btn btn--primary" data-save>Save</button>
           <button type="button" class="btn" data-reset>Reset to defaults</button>
+        </div>
+        <p class="status" data-status role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="timer-sound-heading">
+        <h2 id="timer-sound-heading">Timer Sound</h2>
+        <p class="muted">
+          Play a short, subtle notification sound when the affirmation timer completes.
+        </p>
+
+        <div class="row">
+          <div class="row__text">
+            <h3>Completion sound</h3>
+            <p class="muted">Enable the notification sound at timer completion.</p>
+          </div>
+          <label class="switch">
+            <input id="timer-sound-enabled" type="checkbox" role="switch" />
+            <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+            <span class="sr-only">Enable timer completion sound</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="timer-sound-volume">Volume</label>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <input
+              id="timer-sound-volume"
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              style="flex: 1;"
+            />
+            <span id="timer-sound-volume-value" class="muted" style="min-width: 3rem; text-align: right;">30%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="completion-sound-repeat-count">Repeat count</label>
+          <select id="completion-sound-repeat-count"></select>
+          <p class="muted" style="margin-top: 0.5rem">
+            How many times the notification plays each time the timer completes.
+          </p>
+        </div>
+
+        <div class="buttons">
+          <button type="button" class="btn" id="test-sound">Test Sound</button>
+          <button type="button" class="btn btn--primary" data-save>Save</button>
         </div>
         <p class="status" data-status role="status" aria-live="polite"></p>
       </section>

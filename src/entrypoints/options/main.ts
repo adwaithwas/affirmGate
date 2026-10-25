@@ -1,15 +1,25 @@
 import './style.css';
 import {
   AFFIRMATION_DURATIONS,
+  COMPLETION_SOUND_REPEAT_COUNTS,
   DEFAULT_AFFIRMATION,
   DEFAULT_AFFIRMATION_DURATION,
+  DEFAULT_COMPLETION_SOUND_REPEAT_COUNT,
   DEFAULT_REMINDER,
+  DEFAULT_TIMER_SOUND_ENABLED,
+  DEFAULT_TIMER_SOUND_VOLUME,
   MAX_AFFIRMATION_LENGTH,
   MAX_REMINDER_LENGTH,
+  MAX_TIMER_SOUND_VOLUME,
+  MIN_TIMER_SOUND_VOLUME,
 } from '@/lib/constants';
-import { normalizeAffirmationDuration } from '@/lib/settings';
+import {
+  normalizeAffirmationDuration,
+  normalizeCompletionSoundRepeatCount,
+} from '@/lib/settings';
 import { loadSettings, resetSettings, saveSettings } from '@/lib/storage';
 import { formatClock } from '@/lib/timer';
+import { isCompletionSequenceActive, playCompletionSequence } from '@/lib/timer-sound';
 import type { Settings } from '@/lib/types';
 
 function requireElement<T extends HTMLElement>(id: string): T {
@@ -29,6 +39,14 @@ const previewEl = requireElement<HTMLDivElement>('preview');
 const previewTextEl = requireElement<HTMLParagraphElement>('preview-text');
 const previewDisabledEl = requireElement<HTMLParagraphElement>('preview-disabled');
 
+const timerSoundEnabledInput = requireElement<HTMLInputElement>('timer-sound-enabled');
+const timerSoundVolumeInput = requireElement<HTMLInputElement>('timer-sound-volume');
+const timerSoundVolumeValueEl = requireElement<HTMLSpanElement>('timer-sound-volume-value');
+const completionSoundRepeatSelect = requireElement<HTMLSelectElement>(
+  'completion-sound-repeat-count',
+);
+const testSoundButton = requireElement<HTMLButtonElement>('test-sound');
+
 const saveButtons = Array.from(
   document.querySelectorAll<HTMLButtonElement>('[data-save]'),
 );
@@ -47,6 +65,13 @@ for (const seconds of AFFIRMATION_DURATIONS) {
   option.value = String(seconds);
   option.textContent = `${seconds} seconds`;
   durationSelect.append(option);
+}
+
+for (const count of COMPLETION_SOUND_REPEAT_COUNTS) {
+  const option = document.createElement('option');
+  option.value = String(count);
+  option.textContent = count === 1 ? '1 time' : `${count} times`;
+  completionSoundRepeatSelect.append(option);
 }
 
 function showStatus(message: string, tone: 'info' | 'error' = 'info'): void {
@@ -69,6 +94,13 @@ function updateTimerPreview(): void {
   timerPreviewEl.textContent = formatClock(seconds);
 }
 
+function updateTimerSoundVolumeDisplay(): void {
+  const volume = parseFloat(timerSoundVolumeInput.value);
+  if (!Number.isNaN(volume)) {
+    timerSoundVolumeValueEl.textContent = `${Math.round(volume * 100)}%`;
+  }
+}
+
 function updatePreview(): void {
   const enabled = enabledInput.checked;
   const text = reminderInput.value.trim();
@@ -78,12 +110,24 @@ function updatePreview(): void {
   previewTextEl.textContent = text.length > 0 ? text : DEFAULT_REMINDER;
 }
 
+function readTimerSoundVolume(): number {
+  const volume = parseFloat(timerSoundVolumeInput.value);
+  return Number.isNaN(volume)
+    ? DEFAULT_TIMER_SOUND_VOLUME
+    : Math.max(MIN_TIMER_SOUND_VOLUME, Math.min(MAX_TIMER_SOUND_VOLUME, volume));
+}
+
 function readForm(): Settings {
   return {
     reminder: reminderInput.value.trim(),
     enabled: enabledInput.checked,
     affirmation: affirmationInput.value.trim(),
     affirmationDuration: normalizeAffirmationDuration(durationSelect.value),
+    timerSoundEnabled: timerSoundEnabledInput.checked,
+    timerSoundVolume: readTimerSoundVolume(),
+    completionSoundRepeatCount: normalizeCompletionSoundRepeatCount(
+      completionSoundRepeatSelect.value,
+    ),
   };
 }
 
@@ -92,9 +136,13 @@ function applySettingsToForm(settings: Settings): void {
   reminderInput.value = settings.reminder;
   affirmationInput.value = settings.affirmation;
   durationSelect.value = String(settings.affirmationDuration);
+  timerSoundEnabledInput.checked = settings.timerSoundEnabled;
+  timerSoundVolumeInput.value = String(settings.timerSoundVolume);
+  completionSoundRepeatSelect.value = String(settings.completionSoundRepeatCount);
   updateReminderCounter();
   updateAffirmationCounter();
   updateTimerPreview();
+  updateTimerSoundVolumeDisplay();
   updatePreview();
 }
 
@@ -117,6 +165,64 @@ durationSelect.addEventListener('change', () => {
 enabledInput.addEventListener('change', () => {
   updatePreview();
   showStatus('');
+});
+
+timerSoundEnabledInput.addEventListener('change', () => {
+  showStatus('');
+});
+
+timerSoundVolumeInput.addEventListener('input', () => {
+  updateTimerSoundVolumeDisplay();
+  showStatus('');
+});
+
+completionSoundRepeatSelect.addEventListener('change', () => {
+  showStatus('');
+});
+
+testSoundButton.addEventListener('click', () => {
+  if (testSoundButton.disabled) return;
+
+  void (async () => {
+    if (isCompletionSequenceActive()) {
+      showStatus('A test sound is already playing.');
+      return;
+    }
+
+    testSoundButton.disabled = true;
+    try {
+      const repeatCount = normalizeCompletionSoundRepeatCount(
+        completionSoundRepeatSelect.value,
+      );
+      const result = await playCompletionSequence({
+        enabled: timerSoundEnabledInput.checked,
+        volume: readTimerSoundVolume(),
+        repeatCount,
+      });
+
+      if (!timerSoundEnabledInput.checked) {
+        showStatus('Sound is disabled in settings.');
+      } else if (result.ok) {
+        showStatus(
+          `Test sound played ${result.playedCount} time${
+            result.playedCount === 1 ? '' : 's'
+          }.`,
+        );
+      } else if (result.reason === 'busy') {
+        showStatus('A test sound is already playing.');
+      } else {
+        showStatus(
+          'Test sound could not play (browser may have blocked autoplay).',
+          'error',
+        );
+      }
+    } catch (error) {
+      console.error('[AffirmGate] Failed to play test sound', error);
+      showStatus('Test sound failed.', 'error');
+    } finally {
+      testSoundButton.disabled = false;
+    }
+  })();
 });
 
 async function save(): Promise<void> {
@@ -179,6 +285,9 @@ void (async () => {
       enabled: true,
       affirmation: DEFAULT_AFFIRMATION,
       affirmationDuration: DEFAULT_AFFIRMATION_DURATION,
+      timerSoundEnabled: DEFAULT_TIMER_SOUND_ENABLED,
+      timerSoundVolume: DEFAULT_TIMER_SOUND_VOLUME,
+      completionSoundRepeatCount: DEFAULT_COMPLETION_SOUND_REPEAT_COUNT,
     });
     showStatus('Could not load saved settings; showing defaults.', 'error');
   }
