@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AffirmGate — Affirmation</title>
+    <meta name="manifest.open_in_tab" content="true" />
+  </head>
+  <body>
+    <main class="stage">
+      <p class="eyebrow">AffirmGate</p>
+
+      <p id="affirmation" class="affirmation"></p>
+
+      <div class="timer" id="timer" role="timer" aria-live="off">
+        <div class="timer__ring" id="ring">
+          <span class="timer__clock" id="clock">0:30</span>
+        </div>
+        <p class="timer__caption" id="caption">Breathe. Read it slowly.</p>
+      </div>
+
+      <div class="complete" id="complete" hidden>
+        <p class="complete__message">Well done. Notice how that felt.</p>
+        <div class="complete__actions">
+          <button type="button" class="btn btn--primary" id="repeat">
+            Repeat affirmation
+          </button>
+          <button type="button" class="btn" id="done">Done</button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </div>
+    </main>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

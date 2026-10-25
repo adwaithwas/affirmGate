@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# WXT generated files
+.wxt/
+.output/
+
+# Build artifacts
+*.zip
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local environment (never commit personal settings/secrets)
+.env
+.env.*
+!.env.example

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AffirmGate — Settings</title>
+    <meta name="manifest.open_in_tab" content="true" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="head">
+        <h1>AffirmGate</h1>
+        <p class="tagline">A gentle pause before YouTube.</p>
+      </header>
+
+      <section class="panel" aria-labelledby="enable-heading">
+        <div class="row">
+          <div class="row__text">
+            <h2 id="enable-heading">Gate enabled</h2>
+            <p class="muted">
+              When off, AffirmGate never blocks or interrupts YouTube.
+            </p>
+          </div>
+          <label class="switch">
+            <input id="enabled" type="checkbox" role="switch" />
+            <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+            <span class="sr-only">Enable the gate</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="reminder-heading">
+        <h2 id="reminder-heading">Your reminder</h2>
+        <p class="muted" id="reminder-help">
+          This exact text appears on the gate. Write what you want to hear in the
+          moment.
+        </p>
+        <label class="sr-only" for="reminder">Reminder text</label>
+        <textarea
+          id="reminder"
+          rows="4"
+          spellcheck="true"
+          aria-describedby="reminder-help counter"
+        ></textarea>
+        <div class="meta">
+          <span id="counter" class="muted"></span>
+        </div>
+        <div class="buttons">
+          <button type="button" class="btn btn--primary" data-save>Save</button>
+          <button type="button" class="btn" data-reset>Reset to default</button>
+        </div>
+        <p class="status" data-status role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="affirmation-heading">
+        <h2 id="affirmation-heading">Affirmation timer</h2>
+        <p class="muted" id="affirmation-help">
+          When you choose “No — I'd rather affirm”, this affirmation appears on a
+          calm timer page instead of YouTube. Write what you want to repeat to
+          yourself during the pause.
+        </p>
+        <label class="sr-only" for="affirmation">Affirmation text</label>
+        <textarea
+          id="affirmation"
+          rows="4"
+          spellcheck="true"
+          aria-describedby="affirmation-help affirmation-counter"
+        ></textarea>
+        <div class="meta">
+          <span id="affirmation-counter" class="muted"></span>
+        </div>
+
+        <div class="field">
+          <label for="affirmation-duration">Timer length</label>
+          <select id="affirmation-duration"></select>
+        </div>
+
+        <div class="timer-preview" aria-hidden="true">
+          <div class="timer-preview__ring" id="timer-preview-ring">
+            <span id="timer-preview-text">0:30</span>
+          </div>
+          <span class="muted">Timer preview</span>
+        </div>
+
+        <div class="buttons">
+          <button type="button" class="btn btn--primary" data-save>Save</button>
+          <button type="button" class="btn" data-reset>Reset to defaults</button>
+        </div>
+        <p class="status" data-status role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="preview-heading">
+        <h2 id="preview-heading">Preview</h2>
+        <p class="muted">
+          This is how the gate will look the next time you open YouTube.
+        </p>
+        <div class="preview" id="preview" aria-hidden="true">
+          <div class="preview__card">
+            <p class="preview__eyebrow">AffirmGate</p>
+            <p id="preview-text" class="preview__text"></p>
+            <div class="preview__actions">
+              <span class="preview__btn">Yes, continue</span>
+              <span class="preview__btn preview__btn--affirm"
+                >No — I'd rather affirm</span
+              >
+            </div>
+          </div>
+        </div>
+        <p id="preview-disabled" class="status" hidden>
+          Preview hidden because the gate is disabled.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="howto-heading">
+        <h2 id="howto-heading">How to use</h2>
+        <ol class="steps">
+          <li>
+            Write your reminder and press <strong>Save</strong>. It is stored
+            only on this device.
+          </li>
+          <li>
+            Open or navigate within YouTube. The gate appears before you can
+            interact with the page.
+          </li>
+          <li>
+            Choose <strong>Yes, continue</strong> to allow just this page, or
+            <strong>No — I'd rather affirm</strong> to open the affirmation timer
+            and close this tab.
+          </li>
+          <li>
+            Every new video or YouTube page asks again. There is no permanent
+            "allow forever" option.
+          </li>
+        </ol>
+      </section>
+
+      <footer class="foot">
+        <p class="muted">
+          Your reminder is stored locally in this browser profile. Nothing is
+          sent anywhere.
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
